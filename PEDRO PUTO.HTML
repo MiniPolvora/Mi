@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa das Constelações - Mostra Científica - 7º Ano</title>
+<style>#titulo{
+    position:fixed;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:100;
+    font-size:42px;
+    font-weight:700;
+    text-align:center;
+    color:#ffffff;
+    text-shadow:0 0 15px rgba(100,180,255,.8);
+    width:90%;
+    pointer-events:none;
+}
+
+#subtitulo{
+    position:fixed;
+    top:72px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:100;
+    font-size:18px;
+    color:#b8dfff;
+    text-align:center;
+    width:90%;
+    pointer-events:none;
+}
+html,body{margin:0;height:100%;background:#020617;color:#fff;font-family:Arial}
+#top{position:fixed;top:10px;left:10px;z-index:2;background:#1118;padding:8px 12px;border-radius:10px}
+button{padding:30px 50px}
+canvas{display:block}
+#info{position:fixed;right:10px;top:10px;width:240px;background:#111c;padding:10px;border-radius:10px}
+
+</style>
+</head>  
+<body>
+    <h1 id="titulo">
+    O Céu Que Conta Histórias:<br>
+    Uma Viagem Pelas Constelações
+</h1>
+
+<div id="subtitulo">
+    
+</div>
+<div id="top"><button id="hem">Hemisfério: Sul</button></div>
+<div id="info"><b>Clique em uma constelação</b><div id="txt"></div></div>
+<canvas id="c"></canvas>
+<script>
+const cv=c=document.getElementById('c'),ctx=c.getContext('2d');
+function rs(){c.width=innerWidth;c.height=innerHeight}onresize=rs;rs();
+let scale=1,ox=0,oy=0,drag=0,sx,sy,sul=true;
+const stars=[...Array(250)].map(()=>({x:Math.random()*2000-1000,y:Math.random()*1200-600,r:Math.random()*2}));
+const cons=[
+{name:"Órion",hem:"N",t:"Conhecida popularmente como o caçador e contendo o famoso asterismo das Três Marias, ela carrega uma rica herança na mitologia grega e desempenha um papel fundamental na astronomia moderna.",p:[[0,0],[40,-20],[70,20],[100,-10],[45,10],[55,20],[65,30]]},
+{name:"Ursa Maior",hem:"N",t:"Mitologicamente, está ligada à trágica história de Calisto e Zeus na Grécia Antiga. Cientificamente, é a 3ª maior constelação do céu, famosa pelo asterismo do Grande Carro, e serve como ferramenta essencial para navegação.",p:[[-180,-80],[-140,-70],[-110,-40],[-70,-20],[-20,-10],[20,10],[60,40]]},
+{name:"Cassiopeia",hem:"N",t:"A constelação de Cassiopeia é uma das mais brilhantes e reconhecíveis do céu noturno, famosa por seu formato em W ou M. Ela possui uma rica herança na mitologia grega, representando a vaidade real, além de ser um marco fundamental na astronomia moderna",p:[[180,-120],[210,-90],[240,-120],[270,-90],[300,-120]]},
+{name:"Cruzeiro do Sul",hem:"S",t:"Situada no céu meridional, funciona como uma bússola natural crucial no Hemisfério Sul e é um símbolo cultural de extrema importância para os povos abaixo da linha do Equador.",p:[[0,120],[0,180],[-25,150],[25,150],[0,150]]},
+{name:"Escorpião",hem:"S",t:"Sua trajetória mistura o fascínio das lendas antigas com descobertas astronômicas modernas sobre estrelas supergigantes e berçários estelares..",p:[[-220,140],[-180,160],[-140,180],[-100,200],[-70,220],[-40,250]]},
+{name:"Centauro",hem:"S",t:"Conhecida desde a Antiguidade, ela narra a lenda do sábio centauro Quíron. Cientificamente, é famosa por abrigar Próxima Centauri, a estrela mais próxima do nosso Sistema Solar.",p:[[180,120],[220,150],[260,180],[300,160]]}
+];
+function draw(){
+ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);
+ctx.translate(c.width/2+ox,c.height/2+oy);ctx.scale(scale,scale);
+ctx.fillStyle="#fff";
+stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fill();});
+cons.filter(k=>sul?k.hem=="S":k.hem=="N").forEach(k=>{
+ctx.strokeStyle="#6cf";ctx.fillStyle="#fff";ctx.beginPath();
+k.p.forEach((a,i)=>{if(i)ctx.lineTo(a[0],a[1]);else ctx.moveTo(a[0],a[1]);});
+ctx.stroke();
+k.p.forEach(a=>{ctx.beginPath();ctx.arc(a[0],a[1],4,0,7);ctx.fill();});
+ctx.fillStyle="#9cf";ctx.fillText(k.name,k.p[0][0],k.p[0][1]-10);
+});
+requestAnimationFrame(draw)}
+draw();
+hem.onclick=()=>{sul=!sul;hem.textContent="Hemisfério: "+(sul?"Sul":"Norte")}
+c.onwheel=e=>{e.preventDefault();scale=Math.min(4,Math.max(.5,scale-e.deltaY*.001))}
+c.onmousedown=e=>{drag=1;sx=e.clientX;sy=e.clientY}
+onmouseup=()=>drag=0;
+onmousemove=e=>{if(drag){ox+=e.clientX-sx;oy+=e.clientY-sy;sx=e.clientX;sy=e.clientY}}
+c.onclick=e=>{
+const x=(e.clientX-c.width/2-ox)/scale,y=(e.clientY-c.height/2-oy)/scale;
+for(const k of cons.filter(v=>sul?v.hem=="S":v.hem=="N")){
+ let mx=k.p.reduce((a,b)=>a+b[0],0)/k.p.length,my=k.p.reduce((a,b)=>a+b[1],0)/k.p.length;
+ if((x-mx)**2+(y-my)**2<2500){txt.innerHTML="<h3>"+k.name+"</h3><p>"+k.t+"</p>";break;}
+}}
+</script>
+</body></html>
+
+Autoria: Pedro S. Pólvora - Turma:
+Sétimo Ano Padre Pedro Piccoli (2026)
