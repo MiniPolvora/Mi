@@ -33,7 +33,7 @@
     pointer-events:none;
 }
 html,body{margin:0;height:100%;background:#020617;color:#fff;font-family:Arial}
-#top{position:fixed;top:10px;left:10px;z-index:2;background:#1118;padding:8px 12px;border-radius:10px}
+#top{position:fixed;top:10px;left:10px;z-index:2;background:#1118;padding:8px 12px;border-radius:10px;display:flex;flex-direction:column;gap:8px}
 button{padding:30px 50px}
 canvas{display:block}
 #info{position:fixed;right:10px;top:10px;width:240px;background:#111c;padding:10px;border-radius:10px}
@@ -49,7 +49,10 @@ canvas{display:block}
 <div id="subtitulo">
     
 </div>
-<div id="top"><button id="hem">Hemisfério: Sul</button></div>
+<div id="top">
+<button id="hem">Hemisfério: Sul</button>
+<button id="nav" style="margin-left: 10px; background: #4a9fff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">📊 Dados & Curiosidades</button>
+</div>
 <div id="info"><b>Clique em uma constelação</b><div id="txt"></div></div>
 <canvas id="c"></canvas>
 <script>
@@ -79,7 +82,8 @@ ctx.fillStyle="#9cf";ctx.fillText(k.name,k.p[0][0],k.p[0][1]-10);
 });
 requestAnimationFrame(draw)}
 draw();
-hem.onclick=()=>{sul=!sul;hem.textContent="Hemisfério: "+(sul?"Sul":"Norte")}
+hem.onclick=()=>{sul=!sul;hem.textContent="Hemisfério: "+(sul?"Sul":"Norte)")}
+nav.onclick=()=>{window.location.href="dados.html"}
 c.onwheel=e=>{e.preventDefault();scale=Math.min(4,Math.max(.5,scale-e.deltaY*.001))}
 c.onmousedown=e=>{drag=1;sx=e.clientX;sy=e.clientY}
 onmouseup=()=>drag=0;
