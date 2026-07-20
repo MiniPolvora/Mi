@@ -5,39 +5,129 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mapa das Constelações - Mostra Científica - 7º Ano</title>
-<style>#titulo{
+<style>
+:root{
+    --panel-bg: rgba(8, 15, 30, .8);
+    --panel-border: rgba(255,255,255,.16);
+    --text: #f8fbff;
+    --muted: #b8dfff;
+    --accent: #4a9fff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#020617;color:#fff;font-family:Arial}
+body{position:relative}
+#titulo{
     position:fixed;
-    top:15px;
+    top:18px;
     left:50%;
     transform:translateX(-50%);
     z-index:100;
-    font-size:42px;
+    font-size:clamp(1.35rem, 2.4vw, 2.4rem);
+    line-height:1.2;
     font-weight:700;
     text-align:center;
     color:#ffffff;
     text-shadow:0 0 15px rgba(100,180,255,.8);
-    width:90%;
+    width:min(92vw, 760px);
     pointer-events:none;
 }
 
 #subtitulo{
     position:fixed;
-    top:72px;
+    top:clamp(78px, 10vw, 110px);
     left:50%;
     transform:translateX(-50%);
     z-index:100;
-    font-size:18px;
+    font-size:clamp(.95rem, 1.5vw, 1.1rem);
     color:#b8dfff;
     text-align:center;
-    width:90%;
+    width:min(92vw, 760px);
     pointer-events:none;
 }
-html,body{margin:0;height:100%;background:#020617;color:#fff;font-family:Arial}
-#top{position:fixed;top:10px;left:10px;z-index:2;background:#1118;padding:8px 12px;border-radius:10px;display:flex;flex-direction:column;gap:8px}
-button{padding:30px 50px}
-canvas{display:block}
-#info{position:fixed;right:10px;top:10px;width:240px;background:#111c;padding:10px;border-radius:10px}
+#top{
+    position:fixed;
+    top:14px;
+    left:14px;
+    z-index:120;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    background:rgba(17,17,17,.65);
+    backdrop-filter:blur(6px);
+    padding:10px;
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);
+}
+button{
+    padding:12px 16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:600;
+    color:#fff;
+    background:#4a9fff;
+    transition:transform .15s ease, background .2s ease;
+    min-height:44px;
+}
+button:active{transform:scale(.97)}
+#hem{background:#0f172a;border:1px solid rgba(255,255,255,.2)}
+#nav{background:#4a9fff}
+canvas{
+    display:block;
+    width:100vw;
+    height:100vh;
+    touch-action:none;
+}
+#info{
+    position:fixed;
+    right:14px;
+    top:14px;
+    width:min(92vw, 280px);
+    max-height:min(50vh, 320px);
+    overflow:auto;
+    background:rgba(17,17,17,.8);
+    backdrop-filter:blur(8px);
+    padding:12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.16);
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+    z-index:110;
+    font-size:14px;
+    line-height:1.5;
+}
+#info b{display:block;margin-bottom:6px;color:#8ec5ff}
+#txt h3{margin:0 0 6px 0;font-size:1rem}
+#txt p{margin:0;color:#eaf4ff}
 
+@media (max-width: 768px){
+    #titulo{top:16px;width:calc(100% - 24px);font-size:clamp(1.2rem, 6vw, 1.7rem)}
+    #subtitulo{top:clamp(70px, 15vw, 95px);font-size:.95rem}
+    #top{
+        top:auto;
+        bottom:14px;
+        left:50%;
+        transform:translateX(-50%);
+        width:min(92vw, 340px);
+        align-items:stretch;
+    }
+    button{width:100%;padding:13px 14px;font-size:15px}
+    #info{
+        right:12px;
+        left:12px;
+        top:auto;
+        bottom:120px;
+        width:auto;
+        max-height:34vh;
+    }
+}
+@media (max-width: 480px){
+    #titulo{top:14px;font-size:clamp(1.05rem, 5.5vw, 1.35rem)}
+    #subtitulo{top:68px;font-size:.85rem}
+    #info{bottom:106px;max-height:30vh;padding:10px}
+    button{font-size:14px}
+}
 </style>
 </head>  
 <body>
@@ -56,9 +146,10 @@ canvas{display:block}
 <div id="info"><b>Clique em uma constelação</b><div id="txt"></div></div>
 <canvas id="c"></canvas>
 <script>
-const cv=c=document.getElementById('c'),ctx=c.getContext('2d');
-function rs(){c.width=innerWidth;c.height=innerHeight}onresize=rs;rs();
-let scale=1,ox=0,oy=0,drag=0,sx,sy,sul=true;
+const cv=c=document.getElementById('c'),ctx=c.getContext('2d'),txt=document.getElementById('txt');
+function rs(){c.width=window.innerWidth;c.height=window.innerHeight}
+window.addEventListener('resize',rs);rs();
+let scale=1,ox=0,oy=0,drag=0,sx=0,sy=0,sul=true,moved=false;
 const stars=[...Array(250)].map(()=>({x:Math.random()*2000-1000,y:Math.random()*1200-600,r:Math.random()*2}));
 const cons=[
 {name:"Órion",hem:"N",t:"Conhecida popularmente como o caçador e contendo o famoso asterismo das Três Marias, ela carrega uma rica herança na mitologia grega e desempenha um papel fundamental na astronomia moderna.",p:[[0,0],[40,-20],[70,20],[100,-10],[45,10],[55,20],[65,30]]},
@@ -82,18 +173,42 @@ ctx.fillStyle="#9cf";ctx.fillText(k.name,k.p[0][0],k.p[0][1]-10);
 });
 requestAnimationFrame(draw)}
 draw();
-hem.onclick=()=>{sul=!sul;hem.textContent="Hemisfério: "+(sul?"Sul":"Norte)")}
+function getPos(e){
+  if(e.touches&&e.touches[0]) return {x:e.touches[0].clientX,y:e.touches[0].clientY};
+  return {x:e.clientX,y:e.clientY};
+}
+function startDrag(e){
+  const p=getPos(e); moved=false; drag=1; sx=p.x; sy=p.y;
+  if(e.cancelable)e.preventDefault();
+}
+function moveDrag(e){
+  if(!drag)return;
+  const p=getPos(e);
+  const dx=p.x-sx,dy=p.y-sy;
+  if(Math.abs(dx)+Math.abs(dy)>4)moved=true;
+  ox+=dx;oy+=dy;sx=p.x;sy=p.y;
+  if(e.cancelable)e.preventDefault();
+}
+function endDrag(){drag=0;}
+hem.onclick=()=>{sul=!sul;hem.textContent="Hemisfério: "+(sul?"Sul":"Norte")}
 nav.onclick=()=>{window.location.href="dados.html"}
-c.onwheel=e=>{e.preventDefault();scale=Math.min(4,Math.max(.5,scale-e.deltaY*.001))}
-c.onmousedown=e=>{drag=1;sx=e.clientX;sy=e.clientY}
-onmouseup=()=>drag=0;
-onmousemove=e=>{if(drag){ox+=e.clientX-sx;oy+=e.clientY-sy;sx=e.clientX;sy=e.clientY}}
+c.addEventListener('wheel',e=>{e.preventDefault();scale=Math.min(4,Math.max(.5,scale-e.deltaY*.001))},{passive:false});
+c.addEventListener('mousedown',startDrag);
+window.addEventListener('mouseup',endDrag);
+window.addEventListener('mousemove',moveDrag);
+c.addEventListener('touchstart',startDrag,{passive:false});
+c.addEventListener('touchmove',moveDrag,{passive:false});
+c.addEventListener('touchend',endDrag);
+c.addEventListener('touchcancel',endDrag);
 c.onclick=e=>{
-const x=(e.clientX-c.width/2-ox)/scale,y=(e.clientY-c.height/2-oy)/scale;
-for(const k of cons.filter(v=>sul?v.hem=="S":v.hem=="N")){
- let mx=k.p.reduce((a,b)=>a+b[0],0)/k.p.length,my=k.p.reduce((a,b)=>a+b[1],0)/k.p.length;
- if((x-mx)**2+(y-my)**2<2500){txt.innerHTML="<h3>"+k.name+"</h3><p>"+k.t+"</p>";break;}
-}}
+  if(moved)return;
+  const p=getPos(e);
+  const x=(p.x-c.width/2-ox)/scale,y=(p.y-c.height/2-oy)/scale;
+  for(const k of cons.filter(v=>sul?v.hem=="S":v.hem=="N")){
+   let mx=k.p.reduce((a,b)=>a+b[0],0)/k.p.length,my=k.p.reduce((a,b)=>a+b[1],0)/k.p.length;
+   if((x-mx)**2+(y-my)**2<2500){txt.innerHTML="<h3>"+k.name+"</h3><p>"+k.t+"</p>";break;}
+  }
+}
 </script>
 </body></html>
 
